@@ -17,11 +17,18 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
+import {UserService, TokenService} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {LoginAccount} from '../models';
 import {LoginAccountRepository} from '../repositories';
-import {PasswordHasherBindings} from '../keys';
+import {
+  PasswordHasherBindings,
+  TokenServiceBindings,
+  UserServiceBindings,
+} from '../keys';
 import {PasswordHasher} from '../services/hash.password.bcryptjs';
+import {CredentialsRequestBody} from './specs/login-account.controller.spec';
+import {Credentials} from '../repositories/login-account.repository';
 
 export class LoginAccountController {
   constructor(
@@ -29,6 +36,10 @@ export class LoginAccountController {
     public loginAccountRepository: LoginAccountRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
+    @inject(UserServiceBindings.USER_SERVICE)
+    public userService: UserService<LoginAccount, Credentials>,
   ) {}
 
   @post('/accounts', {
@@ -183,5 +194,36 @@ export class LoginAccountController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.loginAccountRepository.deleteById(id);
+  }
+
+  @post('/accounts/login', {
+    responses: {
+      '200': {
+        description: 'Token',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                token: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async login(
+    @requestBody(CredentialsRequestBody) credentials: Credentials,
+  ): Promise<{token: String}> {
+    const account = await this.userService.verifyCredentials(credentials);
+
+    const accountProfile = this.userService.convertToUserProfile(account);
+
+    const token = await this.jwtService.generateToken(accountProfile);
+
+    return {token};
   }
 }
