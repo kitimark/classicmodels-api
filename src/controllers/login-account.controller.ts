@@ -17,20 +17,27 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
+import {inject} from '@loopback/core';
 import {LoginAccount} from '../models';
 import {LoginAccountRepository} from '../repositories';
+import {PasswordHasherBindings} from '../keys';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
 
 export class LoginAccountController {
   constructor(
     @repository(LoginAccountRepository)
-    public loginAccountRepository : LoginAccountRepository,
+    public loginAccountRepository: LoginAccountRepository,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public passwordHasher: PasswordHasher,
   ) {}
 
   @post('/account', {
     responses: {
       '200': {
         description: 'LoginAccount model instance',
-        content: {'application/json': {schema: getModelSchemaRef(LoginAccount)}},
+        content: {
+          'application/json': {schema: getModelSchemaRef(LoginAccount)},
+        },
       },
     },
   })
@@ -47,7 +54,18 @@ export class LoginAccountController {
     })
     loginAccount: Omit<LoginAccount, 'id'>,
   ): Promise<LoginAccount> {
-    return this.loginAccountRepository.create(loginAccount);
+    // encrypt password
+    // eslint-disable-next-line require-atomic-updates
+    loginAccount.password = await this.passwordHasher.hashPassword(
+      loginAccount.password,
+    );
+
+    // create new login account
+    const newLoginAccount = await this.loginAccountRepository.create(
+      loginAccount,
+    );
+    delete newLoginAccount.password;
+    return newLoginAccount;
   }
 
   @get('/account/count', {
@@ -59,7 +77,8 @@ export class LoginAccountController {
     },
   })
   async count(
-    @param.query.object('where', getWhereSchemaFor(LoginAccount)) where?: Where<LoginAccount>,
+    @param.query.object('where', getWhereSchemaFor(LoginAccount))
+    where?: Where<LoginAccount>,
   ): Promise<Count> {
     return this.loginAccountRepository.count(where);
   }
@@ -77,7 +96,8 @@ export class LoginAccountController {
     },
   })
   async find(
-    @param.query.object('filter', getFilterSchemaFor(LoginAccount)) filter?: Filter<LoginAccount>,
+    @param.query.object('filter', getFilterSchemaFor(LoginAccount))
+    filter?: Filter<LoginAccount>,
   ): Promise<LoginAccount[]> {
     return this.loginAccountRepository.find(filter);
   }
@@ -99,7 +119,8 @@ export class LoginAccountController {
       },
     })
     loginAccount: LoginAccount,
-    @param.query.object('where', getWhereSchemaFor(LoginAccount)) where?: Where<LoginAccount>,
+    @param.query.object('where', getWhereSchemaFor(LoginAccount))
+    where?: Where<LoginAccount>,
   ): Promise<Count> {
     return this.loginAccountRepository.updateAll(loginAccount, where);
   }
@@ -108,7 +129,9 @@ export class LoginAccountController {
     responses: {
       '200': {
         description: 'LoginAccount model instance',
-        content: {'application/json': {schema: getModelSchemaRef(LoginAccount)}},
+        content: {
+          'application/json': {schema: getModelSchemaRef(LoginAccount)},
+        },
       },
     },
   })

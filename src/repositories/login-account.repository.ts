@@ -3,6 +3,11 @@ import {LoginAccount, LoginAccountRelations} from '../models';
 import {ClassicmodelsDataSource} from '../datasources';
 import {inject} from '@loopback/core';
 
+export type Credentials = {
+  username: string;
+  password: string;
+};
+
 export class LoginAccountRepository extends DefaultCrudRepository<
   LoginAccount,
   typeof LoginAccount.prototype.id,
