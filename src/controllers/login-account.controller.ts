@@ -31,7 +31,7 @@ export class LoginAccountController {
     public passwordHasher: PasswordHasher,
   ) {}
 
-  @post('/account', {
+  @post('/accounts', {
     responses: {
       '200': {
         description: 'LoginAccount model instance',
@@ -68,7 +68,7 @@ export class LoginAccountController {
     return newLoginAccount;
   }
 
-  @get('/account/count', {
+  @get('/accounts/count', {
     responses: {
       '200': {
         description: 'LoginAccount model count',
@@ -83,7 +83,7 @@ export class LoginAccountController {
     return this.loginAccountRepository.count(where);
   }
 
-  @get('/account', {
+  @get('/accounts', {
     responses: {
       '200': {
         description: 'Array of LoginAccount model instances',
@@ -102,7 +102,7 @@ export class LoginAccountController {
     return this.loginAccountRepository.find(filter);
   }
 
-  @patch('/account', {
+  @patch('/accounts', {
     responses: {
       '200': {
         description: 'LoginAccount PATCH success count',
@@ -125,7 +125,7 @@ export class LoginAccountController {
     return this.loginAccountRepository.updateAll(loginAccount, where);
   }
 
-  @get('/account/{id}', {
+  @get('/accounts/{id}', {
     responses: {
       '200': {
         description: 'LoginAccount model instance',
@@ -139,7 +139,7 @@ export class LoginAccountController {
     return this.loginAccountRepository.findById(id);
   }
 
-  @patch('/account/{id}', {
+  @patch('/accounts/{id}', {
     responses: {
       '204': {
         description: 'LoginAccount PATCH success',
@@ -160,7 +160,7 @@ export class LoginAccountController {
     await this.loginAccountRepository.updateById(id, loginAccount);
   }
 
-  @put('/account/{id}', {
+  @put('/accounts/{id}', {
     responses: {
       '204': {
         description: 'LoginAccount PUT success',
@@ -174,7 +174,7 @@ export class LoginAccountController {
     await this.loginAccountRepository.replaceById(id, loginAccount);
   }
 
-  @del('/account/{id}', {
+  @del('/accounts/{id}', {
     responses: {
       '204': {
         description: 'LoginAccount DELETE success',
