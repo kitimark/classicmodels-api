@@ -1,0 +1,11 @@
+{
+  "name": "classicmodels",
+  "connector": "mongodb",
+  "url": "",
+  "host": "localhost",
+  "port": 27017,
+  "user": "",
+  "password": "",
+  "database": "classicmodels",
+  "useNewUrlParser": true
+}
